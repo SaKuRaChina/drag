@@ -1,0 +1,140 @@
+<!DOCTYPE html>
+<html>
+	<head>
+		<meta charset="UTF-8">
+		<title>文本拖拽</title>
+		<script type="text/javascript" src="js/jquery-3.1.0.min.js"></script>
+		<style type="text/css">
+			
+			.totalTxt{width: 400px;float: left;}
+			.txt{min-height: 400px;border: 1px solid #ccc;}
+			.box1,.box2{width: 300px;height: 300px;border: 2px solid #eee;float: left;margin: 0 50px;overflow: auto;}
+			button{width:400px;height: 50px;line-height: 50px;text-align: center;margin: 20px 0;}
+			.txt p:hover{text-shadow: 0 0 2px #D3D3D3;cursor: pointer;}
+		</style>
+	</head>
+	<body>
+		
+		<div class="totalTxt">
+			<div class="txt"></div>
+			<button onclick="getCont()">点击获取内容</button>
+		</div>
+		
+		
+		<div class="box1"></div>
+		
+		<div class="box2"></div>
+		
+	</body>
+</html>
+
+<script type="text/javascript">
+	
+	
+	alert("请确认您是从可以模拟本地服务器的编辑器（如：hbuilder,webstorm）中打开的，否则文章内容将无法获取")
+	
+	function getCont(){
+		var splitIcon = "。"
+		$.ajax({
+			type:"get",
+			url:"file/testTxt.txt",
+			async:true,
+			success:function(res){
+				//console.log(res);
+				//console.log(typeof res);
+				var tempArr = res.split(splitIcon);
+				//console.log(tempArr);
+				var addHtml = "";
+				tempArr.forEach(function(cv,i){
+					if(tempArr[i].length!=0){
+						addHtml += "<p onselectstart='return false'>" + tempArr[i] + splitIcon + "</p>";
+					}
+				})
+				$('.txt').html(addHtml);//添加内容
+				
+				//为所有添加的内容绑定事件
+				$('.txt p').each(function(i){
+					drag($('.txt p:eq(' + i + ')'))
+				})
+			},
+			error:function(res){
+				console.log(res)
+			}
+		});
+		
+	}
+	
+	
+	//拖拽事件
+	function drag(obj){
+		
+		//鼠标按下获取内容
+		$(obj).on("mousedown",function(){
+			var html = value(obj);
+			//console.log(html)
+			
+			
+			//鼠标移动
+			//$(document).on("mousemove",function(ev){})
+			
+			//鼠标放开
+			$(document).one("mouseup",{txt:html},function(ev){
+				var cx = ev.clientX;
+				var cy = ev.clientY;
+				
+				//判定定位在哪个盒子
+				var is1 = position($('.box1'),cx,cy);
+				var is2 = position($('.box2'),cx,cy);
+				
+				var newhtml = "<p>" + ev.data.txt + "</p>"
+				if(is1){
+					$('.box1').append(newhtml)
+				};
+				if(is2){
+					$('.box2').append(newhtml)
+				}
+				
+				//ev.preventDefault()
+				
+			})
+			
+			
+		})			
+	};
+	
+	
+	
+	//获取文本
+	function value(obj){
+		var html = $(obj).html();
+		
+		//console.log(html)
+		return html
+	}
+	
+
+
+	
+	//判断是否进入盒子
+	function position(obj,x,y){
+		var left = $(obj).offset().left;
+		var right = left + $(obj).width();
+		var top = $(obj).offset().top;
+		var bottom = top + $(obj).height();
+		
+		var check = true;
+		
+		if(x >= left && x<= right && y >= top && y <= bottom){
+			check = true
+		}else{
+			check = false
+		}
+		
+		return check
+	}
+	
+	
+	
+	
+	
+</script>
